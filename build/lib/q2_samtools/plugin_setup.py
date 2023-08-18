@@ -20,7 +20,7 @@ plugin.methods.register_function(
     function=q2_samtools.sort,
     inputs={"alignment_map": SampleData[AlignmentMap]},  # type: ignore
     parameters={},
-    outputs=[("output_bam", SampleData[AlignmentMap])],  # type: ignore
+    outputs=[("sorted_alignment_map", SampleData[AlignmentMap])],  # type: ignore
     input_descriptions={},
     parameter_descriptions={},
     output_descriptions={},

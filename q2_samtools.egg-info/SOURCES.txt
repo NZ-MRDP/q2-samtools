@@ -1,0 +1,11 @@
+README.md
+pyproject.toml
+setup.py
+q2_samtools/__init__.py
+q2_samtools/_samtools.py
+q2_samtools/plugin_setup.py
+q2_samtools.egg-info/PKG-INFO
+q2_samtools.egg-info/SOURCES.txt
+q2_samtools.egg-info/dependency_links.txt
+q2_samtools.egg-info/entry_points.txt
+q2_samtools.egg-info/top_level.txt
