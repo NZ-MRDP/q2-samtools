@@ -11,6 +11,6 @@ from q2_types_genomics.per_sample_data._type import AlignmentMap
 def sort(alignment_map: BAMFormat) -> BAMFormat:
     """sort."""
     output_bam = BAMFormat()
-    cmd = ["samtools sort", str(alignment_map), "-o", str(output_bam)]
+    cmd = ["samtools", "sort", str(alignment_map), "-o", str(output_bam)]
     subprocess.run(cmd, check=True)
     return output_bam
