@@ -1,0 +1,2 @@
+[qiime2.plugins]
+q2-samtools = q2_samtools.plugin_setup:plugin
