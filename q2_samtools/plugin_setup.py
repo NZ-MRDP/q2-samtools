@@ -3,6 +3,7 @@
 import qiime2.plugin
 from q2_types.sample_data import SampleData
 from q2_types_genomics.per_sample_data._type import AlignmentMap
+from qiime2.plugin import Int
 
 import q2_samtools
 
@@ -19,10 +20,12 @@ plugin = qiime2.plugin.Plugin(
 plugin.methods.register_function(
     function=q2_samtools.sort,
     inputs={"alignment_map": SampleData[AlignmentMap]},  # type: ignore
-    parameters={},
+    parameters={"threads": Int},
     outputs=[("output_bam", SampleData[AlignmentMap])],  # type: ignore
     input_descriptions={},
-    parameter_descriptions={},
+    parameter_descriptions={
+        "threads": "INT Set number of sorting and compression threads. By default, operation is single-threaded."
+    },
     output_descriptions={},
     name="samtools qiime plugin",
     description=(
