@@ -25,7 +25,7 @@ plugin.methods.register_function(
         "compression_level": Int % Range(0, 9, inclusive_end=True),  # type: ignore
         "memory_per_thread": Str,
         "name_sort": Bool,
-        "tag": Str,
+        "tag_sort": Str,
         "minimizer_sort": Bool,
         "kmer_size": Int,
     },
