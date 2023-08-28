@@ -14,7 +14,7 @@ def sort(
     compression_level: int = 1,
     memory_per_thread: str = "768M",
     name_sort: bool = False,
-    tag: str = "",
+    tag_sort: str = "",
     minimizer_sort: bool = False,
     kmer_size: int = 20,
 ) -> BAMDirFmt:
@@ -37,11 +37,9 @@ def sort(
         if name_sort:
             cmd.append("-n")
         if tag:
-            cmd.extend(["-t", tag])
+            cmd.extend(["-t", tag_sort])
         if minimizer_sort:
-            cmd.append("-M")
-        if kmer_size:
-            cmd.extend(["-K", str(kmer_size)])
+            cmd.extend(["-M", "-K", str(kmer_size)])
         subprocess.run(cmd, check=True)
     return output_bam
 

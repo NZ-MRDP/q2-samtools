@@ -2,7 +2,7 @@
 name = "q2-samtools"
 description = ""
 version = "0.0.0"
-authors = ["Megan Chenaux <mled@novozymes.com>, Joanne Liu, Laura Vann, Henzi Kou, John Chase"]
+authors = ["Megan Chenaux <mled@novozymes.com>"]
 packages = [{include = "q2_samtools"}]
 
 [tool.poetry.dependencies]
@@ -33,7 +33,7 @@ build-backend = "poetry.masonry.api"
 
 #This doesn't seem to work, I think it is a qiime issue though
 [tool.poetry.plugins."qiime2.plugins"]
-"q2-samtools" = "q2-samtools=samtools.plugin_setup:plugin"
+"q2-samtools" = "q2-samtools=q2_samtools.plugin_setup:plugin"
 
 [tool.black]
 line-length = 119
