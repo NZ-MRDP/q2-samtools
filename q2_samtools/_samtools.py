@@ -36,7 +36,7 @@ def sort(
         ]
         if name_sort:
             cmd.append("-n")
-        if tag:
+        if tag_sort:
             cmd.extend(["-t", tag_sort])
         if minimizer_sort:
             cmd.extend(["-M", "-K", str(kmer_size)])
