@@ -30,7 +30,9 @@ plugin.methods.register_function(
         "kmer_size": Int,
     },
     outputs=[("output_bam", SampleData[AlignmentMap])],  # type: ignore
-    input_descriptions={},
+    input_descriptions={
+        "Input should be a bam file. A separate q2 plugin is planned to convert between bam, sam, and cram formats."
+    },
     parameter_descriptions={
         "threads": "-@ Set number of sorting and compression threads. By default, operation is single-threaded.",
         "compression_level": (
@@ -55,7 +57,9 @@ plugin.methods.register_function(
         ),
         "kmer_size": "Sets the kmer size to be used in the mimizer_sort option. Default = 20",
     },
-    output_descriptions={},
+    output_descriptions={
+        "Output is a bam file. A separate q2 plugin is planned to convert between bam, sam, and cram formats."
+    },
     name="samtools qiime plugin",
     description=(
         "Sort alignments by leftmost coordinates, by read name when name_sort is used, by tag contents with -t, "
