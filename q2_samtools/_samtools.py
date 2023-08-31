@@ -50,9 +50,9 @@ def sort(
         if template_coordinate:
             cmd.append("--template-coordinate")
         if prefix:
-            cmd.extend(["-T", prefix])
+            cmd.extend(["-T", str(prefix)])
         if tag_sort:
-            cmd.extend(["-t", tag_sort])
+            cmd.extend(["-t", str(tag_sort)])
         if minimizer_sort:
             cmd.extend(["-M", "-K", str(kmer_size)])
         if reference_fasta:
