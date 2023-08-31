@@ -2,12 +2,7 @@ import os
 import subprocess
 from typing import Union
 
-from q2_types.feature_data._format import (
-    DNAFASTAFormat,
-    DNASequencesDirectoryFormat,
-    RNAFASTAFormat,
-    RNASequencesDirectoryFormat,
-)
+from q2_types.feature_data._format import DNAFASTAFormat, RNAFASTAFormat
 from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
 
 
@@ -22,10 +17,10 @@ def sort(
     compression_level: int = 1,
     memory_per_thread: str = "768M",
     name_sort: bool = False,
-    tag_sort: str = "",
+    tag_sort: str = None,
     minimizer_sort: bool = False,
     kmer_size: int = 20,
-    prefix: str = "",
+    prefix: str = None,
     template_coordinate: bool = False,
     exclude_pg: bool = False,
     verbosity: int = 1,
@@ -43,8 +38,6 @@ def sort(
             str(compression_level),
             "-m",
             str(memory_per_thread),
-            "-T",
-            str(prefix),
             "-o",
             os.path.join(str(output_bam), str(path.stem) + ".bam"),
             "--verbosity",
@@ -56,6 +49,8 @@ def sort(
             cmd.append("--no-PG")
         if template_coordinate:
             cmd.append("--template-coordinate")
+        if prefix:
+            cmd.extend(["-T", prefix])
         if tag_sort:
             cmd.extend(["-t", tag_sort])
         if minimizer_sort:

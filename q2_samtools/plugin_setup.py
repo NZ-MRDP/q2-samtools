@@ -1,7 +1,7 @@
 """QIIME 2 plugin for samtools."""
 
 import qiime2.plugin
-from q2_types.feature_data import FeatureData, RNASequence, Sequence
+from q2_types.feature_data import FeatureData, Sequence
 from q2_types.sample_data import SampleData
 from q2_types_genomics.per_sample_data._type import AlignmentMap
 from qiime2.plugin import Bool, Int, Range, Str
@@ -90,6 +90,6 @@ plugin.methods.register_function(
         "Thus the name_sort, tag_sort and minimizer_sort options are incompatible with samtools index. When sorting by minimisier "
         "(minimizer_sort), the sort order is defined by the whole-read minimiser value and the offset into the read that this minimiser "
         "was observed. This produces small clusters (contig-like, but unaligned) and helps to improve compression with LZ algorithms. "
-        "This can be improved by supplying a known reference to build a minimiser index (reference_fasta and -w options)."
+        "This can be improved by supplying a known reference to build a minimiser index (reference_fasta option)."
     ),
 )
