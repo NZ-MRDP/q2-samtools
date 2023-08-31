@@ -1,6 +1,8 @@
 import os
 import subprocess
+from typing import Union
 
+from q2_types.feature_data._format import DNAFASTAFormat, RNAFASTAFormat
 from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
 
 
@@ -10,13 +12,18 @@ from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
 #
 def sort(
     alignment_map: BAMDirFmt,
+    reference_fasta: Union[DNAFASTAFormat, RNAFASTAFormat] = None,
     threads: int = 1,
     compression_level: int = 1,
     memory_per_thread: str = "768M",
     name_sort: bool = False,
-    tag_sort: str = "",
+    tag_sort: str = None,
     minimizer_sort: bool = False,
     kmer_size: int = 20,
+    prefix: str = None,
+    template_coordinate: bool = False,
+    exclude_pg: bool = False,
+    verbosity: int = 1,
 ) -> BAMDirFmt:
     """sort."""
     output_bam = BAMDirFmt()
@@ -33,13 +40,23 @@ def sort(
             str(memory_per_thread),
             "-o",
             os.path.join(str(output_bam), str(path.stem) + ".bam"),
+            "--verbosity",
+            str(verbosity),
         ]
         if name_sort:
             cmd.append("-n")
+        if exclude_pg:
+            cmd.append("--no-PG")
+        if template_coordinate:
+            cmd.append("--template-coordinate")
+        if prefix:
+            cmd.extend(["-T", str(prefix)])
         if tag_sort:
-            cmd.extend(["-t", tag_sort])
+            cmd.extend(["-t", str(tag_sort)])
         if minimizer_sort:
             cmd.extend(["-M", "-K", str(kmer_size)])
+        if reference_fasta:
+            cmd.extend(["--reference", str(reference_fasta)])
         subprocess.run(cmd, check=True)
     return output_bam
 
