@@ -2,14 +2,19 @@ import os
 import subprocess
 from typing import Union
 
-from q2_types.feature_data._format import DNAFASTAFormat, RNAFASTAFormat
+from q2_types.feature_data._format import (
+    DNAFASTAFormat,
+    DNASequencesDirectoryFormat,
+    HeaderlessTSVTaxonomyFormat,
+    RNAFASTAFormat,
+)
 from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
-
 
 # TODO: Add in arguments/flags
 # TODO: Make sure .sam/.cram files work - low priority
 # TODO: maybe add another method that allows transformations from .sam/.cram to .bam
-#
+
+
 def sort(
     alignment_map: BAMDirFmt,
     reference_fasta: Union[DNAFASTAFormat, RNAFASTAFormat] = None,
@@ -61,7 +66,18 @@ def sort(
     return output_bam
 
 
-# TODO: Get this plugin working
-def faidx():
+# TODO: Get this plugin working. What is the correct type/format for the output_fai?
+def faidx(
+    reference_fasta: DNAFASTAFormat,
+) -> HeaderlessTSVTaxonomyFormat:  # This is not working
     """faidx."""
-    pass
+    output_fai = HeaderlessTSVTaxonomyFormat()  # this is not working
+    cmd = [
+        "samtools",
+        "faidx",
+        str(reference_fasta),
+        "-o",
+        str(output_fai),
+    ]
+    subprocess.run(cmd, check=True)
+    return output_fai

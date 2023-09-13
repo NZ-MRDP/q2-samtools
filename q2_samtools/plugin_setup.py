@@ -1,7 +1,7 @@
 """QIIME 2 plugin for samtools."""
 
 import qiime2.plugin
-from q2_types.feature_data import FeatureData, Sequence
+from q2_types.feature_data import FeatureData, HeaderlessTSVTaxonomyFormat, Sequence
 from q2_types.sample_data import SampleData
 from q2_types_genomics.per_sample_data._type import AlignmentMap
 from qiime2.plugin import Bool, Int, Range, Str
@@ -91,5 +91,35 @@ plugin.methods.register_function(
         "(minimizer_sort), the sort order is defined by the whole-read minimiser value and the offset into the read that this minimiser "
         "was observed. This produces small clusters (contig-like, but unaligned) and helps to improve compression with LZ algorithms. "
         "This can be improved by supplying a known reference to build a minimiser index (reference_fasta option)."
+    ),
+)
+
+# TODO: find the right format for .fai files (output). FeatureTable[Frequency]? FeatureData[?]?
+plugin.methods.register_function(
+    function=q2_samtools.faidx,
+    inputs={"reference_fasta": FeatureData[Sequence]},  # type: ignore
+    parameters={
+        # "continue": Bool,
+        # "reverse_complement": Bool,
+        # "length": Int,
+        # "mark_strand": Str,
+        # "exclude_pg": Bool,
+        # "template_coordinate": Bool,
+        # "verbosity": Int,
+    },
+    outputs=[("output_fai", FeatureData)],  # this is not working
+    input_descriptions={
+        "reference_fasta": ("Reference DNA sequence FASTA"),
+    },
+    parameter_descriptions={},
+    output_descriptions={"output_fai": "Write index to file rather than to stdout"},
+    name="samtools qiime plugin",
+    description=(
+        "Index reference sequence in the FASTA format or extract subsequence from indexed reference sequence. If no region is specified, "
+        "faidx will index the file and create <ref.fasta>.fai on the disk. If regions are specified, the subsequences will be "
+        "retrieved and printed to stdout in the FASTA format. The input file can be compressed in the BGZF format. The sequences in the "
+        "input file should all have different names. If they do not, indexing will emit a warning about duplicate sequences and retrieval "
+        "will only produce subsequences from the first sequence with the duplicated name. FASTQ files can be read and indexed by this "
+        "command. Without using --fastq any extracted subsequence will be in FASTA format."
     ),
 )
