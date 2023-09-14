@@ -5,10 +5,12 @@ from typing import Union
 from q2_types.feature_data._format import (
     DNAFASTAFormat,
     DNASequencesDirectoryFormat,
-    HeaderlessTSVTaxonomyFormat,
     RNAFASTAFormat,
 )
+from q2_types.metadata import ImmutableMetadataFormat
 from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
+
+from ._format import SamtoolsIndexFileFormat
 
 # TODO: Add in arguments/flags
 # TODO: Make sure .sam/.cram files work - low priority
@@ -69,9 +71,9 @@ def sort(
 # TODO: Get this plugin working. What is the correct type/format for the output_fai?
 def faidx(
     reference_fasta: DNAFASTAFormat,
-) -> HeaderlessTSVTaxonomyFormat:  # This is not working
+) -> SamtoolsIndexFileFormat:
     """faidx."""
-    output_fai = HeaderlessTSVTaxonomyFormat()  # this is not working
+    output_fai = SamtoolsIndexFileFormat()
     cmd = [
         "samtools",
         "faidx",

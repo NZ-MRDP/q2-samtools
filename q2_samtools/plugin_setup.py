@@ -1,12 +1,16 @@
 """QIIME 2 plugin for samtools."""
 
 import qiime2.plugin
-from q2_types.feature_data import FeatureData, HeaderlessTSVTaxonomyFormat, Sequence
+from q2_types.feature_data import FeatureData, Sequence, Taxonomy
+from q2_types.metadata import ImmutableMetadata
 from q2_types.sample_data import SampleData
 from q2_types_genomics.per_sample_data._type import AlignmentMap
 from qiime2.plugin import Bool, Int, Range, Str
 
 import q2_samtools
+
+from ._format import SamtoolsIndexDirFormat
+from ._type import SamtoolsIndexFormat
 
 plugin = qiime2.plugin.Plugin(
     name="samtools",
@@ -107,7 +111,7 @@ plugin.methods.register_function(
         # "template_coordinate": Bool,
         # "verbosity": Int,
     },
-    outputs=[("output_fai", FeatureData)],  # this is not working
+    outputs=[("output_fai", FeatureData[SamtoolsIndexFormat])],  # type: ignore
     input_descriptions={
         "reference_fasta": ("Reference DNA sequence FASTA"),
     },
@@ -122,4 +126,9 @@ plugin.methods.register_function(
         "will only produce subsequences from the first sequence with the duplicated name. FASTQ files can be read and indexed by this "
         "command. Without using --fastq any extracted subsequence will be in FASTA format."
     ),
+)
+
+plugin.register_formats(SamtoolsIndexDirFormat)
+plugin.register_semantic_type_to_format(
+    FeatureData[SamtoolsIndexFormat], artifact_format=SamtoolsIndexDirFormat  # type: ignore
 )
