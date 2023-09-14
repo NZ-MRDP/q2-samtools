@@ -9,8 +9,8 @@ from qiime2.plugin import Bool, Int, Range, Str
 
 import q2_samtools
 
-from ._format import SamtoolsIndexDirFormat
-from ._type import SamtoolsIndexFormat
+from ._format import SamtoolsIndexDirFormat, SamtoolsRegionDirFormat
+from ._type import SamtoolsIndexFormat, SamtoolsRegionFormat
 
 plugin = qiime2.plugin.Plugin(
     name="samtools",
@@ -98,33 +98,53 @@ plugin.methods.register_function(
     ),
 )
 
-# TODO: find the right format for .fai files (output). FeatureTable[Frequency]? FeatureData[?]?
+# TODO: Should this be split into two functions, one for extraction and the othe for indexing?
 plugin.methods.register_function(
     function=q2_samtools.faidx,
-    inputs={"reference_fasta": FeatureData[Sequence]},  # type: ignore
+    inputs={
+        "reference_fasta": FeatureData[Sequence],
+        "region_file": FeatureData[SamtoolsRegionFormat],
+        "input_fai": FeatureData[SamtoolsIndexFormat],
+    },  # type: ignore
     parameters={
-        # "continue": Bool,
-        # "reverse_complement": Bool,
-        # "length": Int,
-        # "mark_strand": Str,
-        # "exclude_pg": Bool,
-        # "template_coordinate": Bool,
-        # "verbosity": Int,
+        "ignore_missing_region": Bool,
+        "reverse_complement": Bool,
+        "fasta_length": Int,
+        "mark_strand": Str,
     },
     outputs=[("output_fai", FeatureData[SamtoolsIndexFormat])],  # type: ignore
     input_descriptions={
-        "reference_fasta": ("Reference DNA sequence FASTA"),
+        "reference_fasta": ("Reference DNA sequence FASTA."),
+        "region_file": ("File of regions.  Format is chr:from-to, one per line. Output will be a FASTA."),
+        "input_fai": ("If using region_file, indexes of sequences to extract from reference FASTA."),
     },
-    parameter_descriptions={},
+    parameter_descriptions={
+        "ignore_missing_region": (
+            "If using region_file, continue working if a non-existent region is requested (after "
+            "trying to retrieve it)."
+        ),
+        "fasta_length": (
+            "Length for output FASTA sequence line wrapping when using region_file. 0 = do not line wrap."
+        ),
+        "reverse_complement": (
+            "If using region_file, output the sequence as the reverse complement. When this option"
+            " is used, “/rc” will be appended to the sequence names. To turn "
+            "this off or change the string appended, use the --mark-strand option."
+        ),
+        "mark_strand": (
+            "If using region_file, add strand indicator to sequence name options: rc = /rc on negative "
+            "strand (default), no = no strand indicator, sign = (+) / (-), or "
+            "custom <pos>,<neg> for custom indicator."
+        ),
+    },
     output_descriptions={"output_fai": "Write index to file rather than to stdout"},
     name="samtools qiime plugin",
     description=(
         "Index reference sequence in the FASTA format or extract subsequence from indexed reference sequence. If no region is specified, "
         "faidx will index the file and create <ref.fasta>.fai on the disk. If regions are specified, the subsequences will be "
-        "retrieved and printed to stdout in the FASTA format. The input file can be compressed in the BGZF format. The sequences in the "
-        "input file should all have different names. If they do not, indexing will emit a warning about duplicate sequences and retrieval "
-        "will only produce subsequences from the first sequence with the duplicated name. FASTQ files can be read and indexed by this "
-        "command. Without using --fastq any extracted subsequence will be in FASTA format."
+        "retrieved and printed to stdout in the FASTA format. The sequences in the input file should all have different names. "
+        "If they do not, indexing will emit a warning about duplicate sequences and retrieval will only produce subsequences from the "
+        "first sequence with the duplicated name."
     ),
 )
 
@@ -132,3 +152,5 @@ plugin.register_formats(SamtoolsIndexDirFormat)
 plugin.register_semantic_type_to_format(
     FeatureData[SamtoolsIndexFormat], artifact_format=SamtoolsIndexDirFormat  # type: ignore
 )
+plugin.register_formats(SamtoolsRegionDirFormat)
+plugin.register_semantic_type_to_format(FeatureData[SamtoolsRegionFormat], artifact_format=SamtoolsRegionDirFormat)

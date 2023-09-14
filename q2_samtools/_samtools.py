@@ -10,9 +10,8 @@ from q2_types.feature_data._format import (
 from q2_types.metadata import ImmutableMetadataFormat
 from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
 
-from ._format import SamtoolsIndexFileFormat
+from ._format import SamtoolsIndexFileFormat, SamtoolsRegionFileFormat
 
-# TODO: Add in arguments/flags
 # TODO: Make sure .sam/.cram files work - low priority
 # TODO: maybe add another method that allows transformations from .sam/.cram to .bam
 
@@ -68,9 +67,15 @@ def sort(
     return output_bam
 
 
-# TODO: Get this plugin working. What is the correct type/format for the output_fai?
+# TODO: add flags
 def faidx(
     reference_fasta: DNAFASTAFormat,
+    ignore_missing_region: bool = False,
+    region_file: SamtoolsRegionFileFormat = None,
+    input_fai: SamtoolsIndexFileFormat = None,
+    fasta_length: int = 60,
+    reverse_complement: bool = False,
+    mark_strand: str = "rc",
 ) -> SamtoolsIndexFileFormat:
     """faidx."""
     output_fai = SamtoolsIndexFileFormat()
@@ -78,8 +83,20 @@ def faidx(
         "samtools",
         "faidx",
         str(reference_fasta),
+        "-n",
+        str(fasta_length),
         "-o",
         str(output_fai),
+        "--mark-strand",
+        str(mark_strand),
     ]
+    if ignore_missing_region:
+        cmd.append("-c")
+    if reverse_complement:
+        cmd.append("-i")
+    if region_file:
+        cmd.extend(["--region-file", str(region_file)])
+    if input_fai:
+        cmd.extend(["--fai-idx", str(input_fai)])
     subprocess.run(cmd, check=True)
     return output_fai

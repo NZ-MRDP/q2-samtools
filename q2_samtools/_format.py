@@ -12,3 +12,16 @@ class SamtoolsIndexFileFormat(model.TextFileFormat):
 SamtoolsIndexDirFormat = model.SingleFileDirectoryFormat(
     "SamtoolsIndexDirFormat", "samtools_fasta_index.fai", SamtoolsIndexFileFormat
 )
+
+
+class SamtoolsRegionFileFormat(model.TextFileFormat):
+    """SamtoolsRegionFileFormat."""
+
+    # TODO: Add validation
+    def _validate_(self, *args):
+        pass
+
+
+SamtoolsRegionDirFormat = model.SingleFileDirectoryFormat(
+    "SamtoolsRegionDirFormat", "samtools_region_file.txt", SamtoolsRegionFileFormat
+)
