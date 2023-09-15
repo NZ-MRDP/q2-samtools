@@ -98,9 +98,8 @@ plugin.methods.register_function(
     ),
 )
 
-# TODO: Should this be split into two functions, one for extraction and the othe for indexing?
 plugin.methods.register_function(
-    function=q2_samtools.faidx,
+    function=q2_samtools.extract_fasta_subsequence,
     inputs={
         "reference_fasta": FeatureData[Sequence],
         "region_file": FeatureData[SamtoolsRegionFormat],
@@ -112,7 +111,7 @@ plugin.methods.register_function(
         "fasta_length": Int,
         "mark_strand": Str,
     },
-    outputs=[("output_fai", FeatureData[SamtoolsIndexFormat])],  # type: ignore
+    outputs=[("fasta_subsequence", FeatureData[Sequence])],  # type: ignore
     input_descriptions={
         "reference_fasta": ("Reference DNA sequence FASTA."),
         "region_file": ("File of regions.  Format is chr:from-to, one per line. Output will be a FASTA."),
@@ -120,31 +119,43 @@ plugin.methods.register_function(
     },
     parameter_descriptions={
         "ignore_missing_region": (
-            "If using region_file, continue working if a non-existent region is requested (after "
-            "trying to retrieve it)."
+            "Continue working if a non-existent region is requested (after trying to retrieve it)."
         ),
-        "fasta_length": (
-            "Length for output FASTA sequence line wrapping when using region_file. 0 = do not line wrap."
-        ),
+        "fasta_length": ("Length for output FASTA sequence line wrapping. 0 = do not line wrap."),
         "reverse_complement": (
-            "If using region_file, output the sequence as the reverse complement. When this option"
-            " is used, “/rc” will be appended to the sequence names. To turn "
-            "this off or change the string appended, use the --mark-strand option."
+            "Output the sequence as the reverse complement. When this option is used, “/rc” will be appended to the sequence names. "
+            "To turn this off or change the string appended, use the --mark-strand option."
         ),
         "mark_strand": (
-            "If using region_file, add strand indicator to sequence name options: rc = /rc on negative "
-            "strand (default), no = no strand indicator, sign = (+) / (-), or "
-            "custom <pos>,<neg> for custom indicator."
+            "Add strand indicator to sequence name options: rc = /rc on negative strand (default), no = no strand indicator, "
+            "sign = (+) / (-), or custom <pos>,<neg> for custom indicator."
         ),
     },
+    output_descriptions={"fasta_subsequence": "Subset FASTA with formatting according to chosen parameters."},
+    name="samtools qiime plugin",
+    description=(
+        "Extract subsequence from indexed reference sequence. Subsequences will be retrieved from region_file."
+        " The sequences in the reference_fasta should all have different names. If they do not, retrieval will only produce subsequences"
+        " from the first sequence with the duplicated name."
+    ),
+)
+
+plugin.methods.register_function(
+    function=q2_samtools.index_fasta,
+    inputs={
+        "reference_fasta": FeatureData[Sequence],  # type: ignore
+    },
+    parameters={},
+    outputs=[("output_fai", FeatureData[SamtoolsIndexFormat])],  # type: ignore
+    input_descriptions={
+        "reference_fasta": ("Reference DNA sequence FASTA."),
+    },
+    parameter_descriptions={},
     output_descriptions={"output_fai": "Write index to file rather than to stdout"},
     name="samtools qiime plugin",
     description=(
-        "Index reference sequence in the FASTA format or extract subsequence from indexed reference sequence. If no region is specified, "
-        "faidx will index the file and create <ref.fasta>.fai on the disk. If regions are specified, the subsequences will be "
-        "retrieved and printed to stdout in the FASTA format. The sequences in the input file should all have different names. "
-        "If they do not, indexing will emit a warning about duplicate sequences and retrieval will only produce subsequences from the "
-        "first sequence with the duplicated name."
+        "Index reference sequence in the FASTA format.fasta_index will index the file and create <ref.fasta>.fai. "
+        "The sequences in the input file should all have different names."
     ),
 )
 

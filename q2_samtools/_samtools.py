@@ -67,18 +67,17 @@ def sort(
     return output_bam
 
 
-# TODO: add flags
-def faidx(
+def extract_fasta_subsequence(
     reference_fasta: DNAFASTAFormat,
+    region_file: SamtoolsRegionFileFormat,
+    input_fai: SamtoolsIndexFileFormat,
     ignore_missing_region: bool = False,
-    region_file: SamtoolsRegionFileFormat = None,
-    input_fai: SamtoolsIndexFileFormat = None,
     fasta_length: int = 60,
     reverse_complement: bool = False,
     mark_strand: str = "rc",
-) -> SamtoolsIndexFileFormat:
-    """faidx."""
-    output_fai = SamtoolsIndexFileFormat()
+) -> DNAFASTAFormat:
+    """extract_fasta_subsequence."""
+    fasta_subsequence = DNAFASTAFormat()
     cmd = [
         "samtools",
         "faidx",
@@ -86,7 +85,7 @@ def faidx(
         "-n",
         str(fasta_length),
         "-o",
-        str(output_fai),
+        str(fasta_subsequence),
         "--mark-strand",
         str(mark_strand),
     ]
@@ -98,5 +97,21 @@ def faidx(
         cmd.extend(["--region-file", str(region_file)])
     if input_fai:
         cmd.extend(["--fai-idx", str(input_fai)])
+    subprocess.run(cmd, check=True)
+    return fasta_subsequence
+
+
+def index_fasta(
+    reference_fasta: DNAFASTAFormat,
+) -> SamtoolsIndexFileFormat:
+    """index_fasta."""
+    output_fai = SamtoolsIndexFileFormat()
+    cmd = [
+        "samtools",
+        "faidx",
+        str(reference_fasta),
+        "-o",
+        str(output_fai),
+    ]
     subprocess.run(cmd, check=True)
     return output_fai
