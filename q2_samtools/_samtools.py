@@ -5,11 +5,12 @@ from typing import Union
 from q2_types.feature_data._format import DNAFASTAFormat, RNAFASTAFormat
 from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
 
+from ._format import SamtoolsIndexFileFormat, SamtoolsRegionFileFormat
 
-# TODO: Add in arguments/flags
 # TODO: Make sure .sam/.cram files work - low priority
 # TODO: maybe add another method that allows transformations from .sam/.cram to .bam
-#
+
+
 def sort(
     alignment_map: BAMDirFmt,
     reference_fasta: Union[DNAFASTAFormat, RNAFASTAFormat] = None,
@@ -61,7 +62,51 @@ def sort(
     return output_bam
 
 
-# TODO: Get this plugin working
-def faidx():
-    """faidx."""
-    pass
+def extract_fasta_subsequence(
+    reference_fasta: DNAFASTAFormat,
+    region_file: SamtoolsRegionFileFormat,
+    input_fai: SamtoolsIndexFileFormat,
+    ignore_missing_region: bool = False,
+    fasta_length: int = 60,
+    reverse_complement: bool = False,
+    mark_strand: str = "rc",
+) -> DNAFASTAFormat:
+    """extract_fasta_subsequence."""
+    fasta_subsequence = DNAFASTAFormat()
+    cmd = [
+        "samtools",
+        "faidx",
+        str(reference_fasta),
+        "--region-file",
+        str(region_file),
+        "--fai-idx",
+        str(input_fai),
+        "-n",
+        str(fasta_length),
+        "-o",
+        str(fasta_subsequence),
+        "--mark-strand",
+        str(mark_strand),
+    ]
+    if ignore_missing_region:
+        cmd.append("-c")
+    if reverse_complement:
+        cmd.append("-i")
+    subprocess.run(cmd, check=True)
+    return fasta_subsequence
+
+
+def index_fasta(
+    reference_fasta: DNAFASTAFormat,
+) -> SamtoolsIndexFileFormat:
+    """index_fasta."""
+    output_fai = SamtoolsIndexFileFormat()
+    cmd = [
+        "samtools",
+        "faidx",
+        str(reference_fasta),
+        "-o",
+        str(output_fai),
+    ]
+    subprocess.run(cmd, check=True)
+    return output_fai
