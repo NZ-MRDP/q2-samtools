@@ -77,6 +77,10 @@ def extract_fasta_subsequence(
         "samtools",
         "faidx",
         str(reference_fasta),
+        "--region-file",
+        str(region_file),
+        "--fai-idx",
+        str(input_fai),
         "-n",
         str(fasta_length),
         "-o",
@@ -88,10 +92,6 @@ def extract_fasta_subsequence(
         cmd.append("-c")
     if reverse_complement:
         cmd.append("-i")
-    if region_file:
-        cmd.extend(["--region-file", str(region_file)])
-    if input_fai:
-        cmd.extend(["--fai-idx", str(input_fai)])
     subprocess.run(cmd, check=True)
     return fasta_subsequence
 
