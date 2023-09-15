@@ -2,12 +2,7 @@ import os
 import subprocess
 from typing import Union
 
-from q2_types.feature_data._format import (
-    DNAFASTAFormat,
-    DNASequencesDirectoryFormat,
-    RNAFASTAFormat,
-)
-from q2_types.metadata import ImmutableMetadataFormat
+from q2_types.feature_data._format import DNAFASTAFormat, RNAFASTAFormat
 from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
 
 from ._format import SamtoolsIndexFileFormat, SamtoolsRegionFileFormat

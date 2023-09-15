@@ -1,8 +1,7 @@
 """QIIME 2 plugin for samtools."""
 
 import qiime2.plugin
-from q2_types.feature_data import FeatureData, Sequence, Taxonomy
-from q2_types.metadata import ImmutableMetadata
+from q2_types.feature_data import FeatureData, Sequence
 from q2_types.sample_data import SampleData
 from q2_types_genomics.per_sample_data._type import AlignmentMap
 from qiime2.plugin import Bool, Int, Range, Str
@@ -24,10 +23,10 @@ plugin = qiime2.plugin.Plugin(
 
 plugin.methods.register_function(
     function=q2_samtools.sort,
-    inputs={"alignment_map": SampleData[AlignmentMap], "reference_fasta": FeatureData[Sequence]},  # type: ignore
+    inputs={"alignment_map": SampleData[AlignmentMap], "reference_fasta": FeatureData[Sequence]},
     parameters={
         "threads": Int,
-        "compression_level": Int % Range(0, 9, inclusive_end=True),  # type: ignore
+        "compression_level": Int % Range(0, 9, inclusive_end=True),
         "memory_per_thread": Str,
         "name_sort": Bool,
         "tag_sort": Str,
@@ -38,7 +37,7 @@ plugin.methods.register_function(
         "template_coordinate": Bool,
         "verbosity": Int,
     },
-    outputs=[("output_bam", SampleData[AlignmentMap])],  # type: ignore
+    outputs=[("output_bam", SampleData[AlignmentMap])],
     input_descriptions={
         "alignment_map": "Input should be a bam file imported as a qza. A separate q2 plugin is planned to convert between bam, sam, and cram formats.",
         "reference_fasta": ("Reference DNA sequence FASTA"),
@@ -82,7 +81,7 @@ plugin.methods.register_function(
     output_descriptions={
         "output_bam": "Output is a bam file compressed in a qza. A separate q2 plugin is planned to convert between bam, sam, and cram formats."
     },
-    name="samtools qiime plugin",
+    name="sort bam files",
     description=(
         "Sort alignments by leftmost coordinates, by read name when name_sort is used, by tag contents with -t, "
         "or a minimiser-based collation order with minimizer_sort. An appropriate @HD-SO sort order header tag will be added "
@@ -104,14 +103,14 @@ plugin.methods.register_function(
         "reference_fasta": FeatureData[Sequence],
         "region_file": FeatureData[SamtoolsRegionFormat],
         "input_fai": FeatureData[SamtoolsIndexFormat],
-    },  # type: ignore
+    },
     parameters={
         "ignore_missing_region": Bool,
         "reverse_complement": Bool,
         "fasta_length": Int,
         "mark_strand": Str,
     },
-    outputs=[("fasta_subsequence", FeatureData[Sequence])],  # type: ignore
+    outputs=[("fasta_subsequence", FeatureData[Sequence])],
     input_descriptions={
         "reference_fasta": ("Reference DNA sequence FASTA."),
         "region_file": ("File of regions.  Format is chr:from-to, one per line. Output will be a FASTA."),
@@ -132,7 +131,7 @@ plugin.methods.register_function(
         ),
     },
     output_descriptions={"fasta_subsequence": "Subset FASTA with formatting according to chosen parameters."},
-    name="samtools qiime plugin",
+    name="extract subsequence from FASTA using index and region files",
     description=(
         "Extract subsequence from indexed reference sequence. Subsequences will be retrieved from region_file."
         " The sequences in the reference_fasta should all have different names. If they do not, retrieval will only produce subsequences"
@@ -143,16 +142,16 @@ plugin.methods.register_function(
 plugin.methods.register_function(
     function=q2_samtools.index_fasta,
     inputs={
-        "reference_fasta": FeatureData[Sequence],  # type: ignore
+        "reference_fasta": FeatureData[Sequence],
     },
     parameters={},
-    outputs=[("output_fai", FeatureData[SamtoolsIndexFormat])],  # type: ignore
+    outputs=[("output_fai", FeatureData[SamtoolsIndexFormat])],
     input_descriptions={
         "reference_fasta": ("Reference DNA sequence FASTA."),
     },
     parameter_descriptions={},
     output_descriptions={"output_fai": "Write index to file rather than to stdout"},
-    name="samtools qiime plugin",
+    name="index a FASTA",
     description=(
         "Index reference sequence in the FASTA format.fasta_index will index the file and create <ref.fasta>.fai. "
         "The sequences in the input file should all have different names."
@@ -160,8 +159,6 @@ plugin.methods.register_function(
 )
 
 plugin.register_formats(SamtoolsIndexDirFormat)
-plugin.register_semantic_type_to_format(
-    FeatureData[SamtoolsIndexFormat], artifact_format=SamtoolsIndexDirFormat  # type: ignore
-)
+plugin.register_semantic_type_to_format(FeatureData[SamtoolsIndexFormat], artifact_format=SamtoolsIndexDirFormat)
 plugin.register_formats(SamtoolsRegionDirFormat)
 plugin.register_semantic_type_to_format(FeatureData[SamtoolsRegionFormat], artifact_format=SamtoolsRegionDirFormat)
