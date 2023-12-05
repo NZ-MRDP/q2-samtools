@@ -1,11 +1,14 @@
 import os
+import shutil
 import subprocess
 from typing import Union
 
 from q2_types.feature_data._format import DNAFASTAFormat, RNAFASTAFormat
 from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
 
-from ._format import SamtoolsIndexFileFormat, SamtoolsRegionFileFormat
+from ._format import (SamtoolsIndexFileFormat,
+                      SamtoolsIndexSequencesDirectoryFormat,
+                      SamtoolsRegionFileFormat)
 
 # TODO: Make sure .sam/.cram files work - low priority
 # TODO: maybe add another method that allows transformations from .sam/.cram to .bam
@@ -98,15 +101,17 @@ def extract_fasta_subsequence(
 
 def index_fasta(
     reference_fasta: DNAFASTAFormat,
-) -> SamtoolsIndexFileFormat:
+) -> SamtoolsIndexSequencesDirectoryFormat:
     """index_fasta."""
-    output_fai = SamtoolsIndexFileFormat()
+    output_fai = SamtoolsIndexSequencesDirectoryFormat()
     cmd = [
         "samtools",
         "faidx",
         str(reference_fasta),
         "-o",
-        str(output_fai),
+        os.path.join(str(output_fai), os.path.basename(str(reference_fasta) + ".fai")),
     ]
     subprocess.run(cmd, check=True)
+    print(str(reference_fasta))
+    shutil.copyfile(str(reference_fasta), os.path.join(str(output_fai), os.path.basename(str(reference_fasta))))
     return output_fai
