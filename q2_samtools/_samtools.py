@@ -109,9 +109,11 @@ def index_fasta(
         "faidx",
         str(reference_fasta),
         "-o",
-        os.path.join(str(output_fai), os.path.basename(str(reference_fasta) + ".fai")),
+        os.path.join(str(output_fai), 
+                     os.path.basename(str(reference_fasta) + ".fai")),
     ]
     subprocess.run(cmd, check=True)
-    print(str(reference_fasta))
-    shutil.copyfile(str(reference_fasta), os.path.join(str(output_fai), os.path.basename(str(reference_fasta))))
+    shutil.copyfile(str(reference_fasta), 
+                    os.path.join(str(output_fai), 
+                                 os.path.basename(str(reference_fasta))))
     return output_fai
