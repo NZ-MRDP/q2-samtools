@@ -40,26 +40,26 @@ class SamtoolsIndexSequencesDirectoryFormat(model.DirectoryFormat):
 
     
     def _validate(self, *args):
-        for fasta, fai in zip(self.fasta_file_paths, self.fai_file_paths):
+        for fasta, fai in zip(self.reference_fasta_filepath, self.reference_fasta_index_filepath):
             if Path(fasta).stem != Path(fai).stem:
                 raise ValidationError("""Found mismatches in file names. 
                                       Bam and bai files must have matching file names before extension""")
 
-    @reference_fasta.set_path_maker
-    def fasta_path_maker(self, sample_id):
-        return '%s.fasta' % sample_id
+#    @reference_fasta.set_path_maker
+#    def reference_fasta_path_maker(self, sample_id):
+#        return '%s.fasta' % sample_id
     
-    @reference_fasta_index.set_path_maker
-    def fai_path_maker(self, sample_id):
-        return '%s.fasta.fai' % sample_id
-    
-    @property
-    def fasta_file_paths(self):
-        bound_collection = model.directory_format.BoundFileCollection(self.reference_fasta, self, path_maker=self.fasta_path_maker)
-        return sorted([os.path.join(str(self.path), path) for path, _ in bound_collection.iter_views(view_type=DNAFASTAFormat)])
+#    @reference_fasta_index.set_path_maker
+#    def reference_fasta_index_path_maker(self, sample_id):
+#        return '%s.fasta.fai' % sample_id
     
     @property
-    def fai_file_paths(self):
-        bound_collection = model.directory_format.BoundFileCollection(self.reference_fasta_index, self, path_maker=self.fai_path_maker)
-        return sorted([os.path.join(str(self.path), path) for path, _ in bound_collection.iter_views(view_type=SamtoolsIndexFileFormat)])
+    def reference_fasta_filepath(self):
+        return [e for e in os.listdir(self.path) if e.endswith('fasta')]
+
+    @property
+    def reference_fasta_index_filepath(self):
+        return [e for e in os.listdir(self.path) if e.endswith('fai')]
+
+
 
