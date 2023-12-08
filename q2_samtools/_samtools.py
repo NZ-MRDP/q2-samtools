@@ -120,7 +120,7 @@ def index_fasta(
         "-R",
         str(reference_fasta),
         "-O",
-        os.path.join(str(dict), "dna-sequences.dict"),
+        os.path.join(str(dict), "dna-sequences.dict"), #'/var/folders/lg/vfkh7fc97pz384hx2byzm4ww0000gn/T/qiime2/mled/data/d1138d42-deb0-4b79-ab96-5d08ce795bde/data/dna-sequences.dict'
     ]
     subprocess.run(cmd, check=True)
     shutil.copyfile(str(reference_fasta), 
