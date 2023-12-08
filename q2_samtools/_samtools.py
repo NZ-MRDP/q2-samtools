@@ -6,9 +6,13 @@ from typing import Union
 from q2_types.feature_data._format import DNAFASTAFormat, RNAFASTAFormat
 from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
 
-from ._format import (DictDirFormat, DictFileFormat, SamtoolsIndexFileFormat,
-                      SamtoolsIndexSequencesDirectoryFormat,
-                      SamtoolsRegionFileFormat)
+from ._format import (
+    DictDirFormat,
+    DictFileFormat,
+    SamtoolsIndexFileFormat,
+    SamtoolsIndexSequencesDirectoryFormat,
+    SamtoolsRegionFileFormat,
+)
 
 # TODO: Make sure .sam/.cram files work - low priority
 # TODO: maybe add another method that allows transformations from .sam/.cram to .bam
@@ -99,34 +103,65 @@ def extract_fasta_subsequence(
     return fasta_subsequence
 
 
+# def index_fasta(
+#     reference_fasta: DNAFASTAFormat,
+# ) -> (SamtoolsIndexSequencesDirectoryFormat, SamtoolsIndexSequencesDirectoryFormat):
+#     """index_fasta."""
+#     output_fai = SamtoolsIndexSequencesDirectoryFormat()
+#     dict = SamtoolsIndexSequencesDirectoryFormat()
+#     cmd = [
+#         "samtools",
+#         "faidx",
+#         str(reference_fasta),
+#         "-o",
+#         os.path.join(str(output_fai),
+#                      os.path.basename(str(reference_fasta) + ".fai")),
+#     ]
+#     subprocess.run(cmd, check=True)
+#     cmd = [
+#         "gatk",
+#         "CreateSequenceDictionary",
+#         "-R",
+#         str(reference_fasta),
+#         "-O",
+#         os.path.join(str(dict), "dna-sequences.dict"),
+#     ]
+#     subprocess.run(cmd, check=True)
+#     shutil.copyfile(str(reference_fasta),
+#                     os.path.join(str(output_fai),
+#                                  os.path.basename(str(reference_fasta))))
+#     shutil.copyfile(os.path.join(str(dict), "dna-sequences.dict"),
+#                     os.path.join(str(output_fai),
+#                                  os.path.basename(str(reference_fasta))))
+#     return output_fai, dict
+
+
 def index_fasta(
     reference_fasta: DNAFASTAFormat,
-) -> (SamtoolsIndexSequencesDirectoryFormat, SamtoolsIndexSequencesDirectoryFormat):
+) -> (SamtoolsIndexSequencesDirectoryFormat, DictDirFormat):
     """index_fasta."""
     output_fai = SamtoolsIndexSequencesDirectoryFormat()
-    dict = SamtoolsIndexSequencesDirectoryFormat()
-    cmd = [
+    output_dict = DictDirFormat()
+    cmd_samtools = [
         "samtools",
         "faidx",
         str(reference_fasta),
         "-o",
-        os.path.join(str(output_fai), 
-                     os.path.basename(str(reference_fasta) + ".fai")),
+        os.path.join(str(output_fai), "fasta.fai"),
     ]
-    subprocess.run(cmd, check=True)
-    cmd = [
+    subprocess.run(cmd_samtools, check=True)
+    shutil.copyfile(str(reference_fasta), os.path.join(str(output_fai), os.path.basename(str(reference_fasta))))
+    cmd_gatk = [
         "gatk",
         "CreateSequenceDictionary",
         "-R",
         str(reference_fasta),
         "-O",
-        os.path.join(str(dict), "dna-sequences.dict"),
+        os.path.join(str(output_fai), "dna-sequences.dict"),
     ]
-    subprocess.run(cmd, check=True)
-    shutil.copyfile(str(reference_fasta), 
-                    os.path.join(str(output_fai), 
-                                 os.path.basename(str(reference_fasta))))
-    shutil.copyfile(os.path.join(str(dict), "dna-sequences.dict"), 
-                    os.path.join(str(output_fai), 
-                                 os.path.basename(str(reference_fasta))))
-    return output_fai, dict
+    subprocess.run(cmd_gatk, check=True)
+
+    shutil.copyfile(
+        os.path.join(str(output_fai), "dna-sequences.dict"), os.path.join(str(output_dict), "dna-sequences.dict")
+    )
+    return output_fai, output_dict

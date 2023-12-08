@@ -17,6 +17,7 @@ class DictFileFormat(model.TextFileFormat):
 
 DictDirFormat = model.SingleFileDirectoryFormat("DictDirFormat", "dna-sequences.dict", DictFileFormat)
 
+
 class SamtoolsIndexFileFormat(model.TextFileFormat):
     """SamtoolsIndexFileFormat."""
 
@@ -42,35 +43,32 @@ SamtoolsRegionDirFormat = model.SingleFileDirectoryFormat(
     "SamtoolsRegionDirFormat", "samtools_region_file.txt", SamtoolsRegionFileFormat
 )
 
+
 class SamtoolsIndexSequencesDirectoryFormat(model.DirectoryFormat):
-    reference_fasta = model.File(r".+\.fasta",
-                                    format=DNAFASTAFormat),
-    reference_fasta_index = model.File(r".+\.fasta.fai",
-                                     format=SamtoolsIndexFileFormat),
+    reference_fasta = model.File(r".+\.fasta", format=DNAFASTAFormat)
+    reference_fasta_index = model.File(r".+\.fai", format=SamtoolsIndexFileFormat)
     reference_fasta_dict = model.File(r".+\.dict", format=DictFileFormat)
 
-    
     def _validate(self, *args):
         for fasta, fai in zip(self.reference_fasta_filepath, self.reference_fasta_index_filepath):
             if Path(fasta).stem != Path(fai).stem:
-                raise ValidationError("""Found mismatches in file names. 
-                                      Bam and bai files must have matching file names before extension""")
+                raise ValidationError(
+                    """Found mismatches in file names. 
+                                      Bam and bai files must have matching file names before extension"""
+                )
 
-#    @reference_fasta.set_path_maker
-#    def reference_fasta_path_maker(self, sample_id):
-#        return '%s.fasta' % sample_id
-    
-#    @reference_fasta_index.set_path_maker
-#    def reference_fasta_index_path_maker(self, sample_id):
-#        return '%s.fasta.fai' % sample_id
-    
+    #    @reference_fasta.set_path_maker
+    #    def reference_fasta_path_maker(self, sample_id):
+    #        return '%s.fasta' % sample_id
+
+    #    @reference_fasta_index.set_path_maker
+    #    def reference_fasta_index_path_maker(self, sample_id):
+    #        return '%s.fasta.fai' % sample_id
+
     @property
     def reference_fasta_filepath(self):
-        return [e for e in os.listdir(self.path) if e.endswith('fasta')]
+        return [e for e in os.listdir(self.path) if e.endswith("fasta")]
 
     @property
     def reference_fasta_index_filepath(self):
-        return [e for e in os.listdir(self.path) if e.endswith('fai')]
-
-
-
+        return [e for e in os.listdir(self.path) if e.endswith("fai")]
