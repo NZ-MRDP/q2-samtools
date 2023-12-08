@@ -6,7 +6,7 @@ from typing import Union
 from q2_types.feature_data._format import DNAFASTAFormat, RNAFASTAFormat
 from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
 
-from ._format import (SamtoolsIndexFileFormat,
+from ._format import (DictDirFormat, DictFileFormat, SamtoolsIndexFileFormat,
                       SamtoolsIndexSequencesDirectoryFormat,
                       SamtoolsRegionFileFormat)
 
@@ -101,9 +101,10 @@ def extract_fasta_subsequence(
 
 def index_fasta(
     reference_fasta: DNAFASTAFormat,
-) -> SamtoolsIndexSequencesDirectoryFormat:
+) -> (SamtoolsIndexSequencesDirectoryFormat, SamtoolsIndexSequencesDirectoryFormat):
     """index_fasta."""
     output_fai = SamtoolsIndexSequencesDirectoryFormat()
+    dict = SamtoolsIndexSequencesDirectoryFormat()
     cmd = [
         "samtools",
         "faidx",
@@ -113,7 +114,19 @@ def index_fasta(
                      os.path.basename(str(reference_fasta) + ".fai")),
     ]
     subprocess.run(cmd, check=True)
+    cmd = [
+        "gatk",
+        "CreateSequenceDictionary",
+        "-R",
+        str(reference_fasta),
+        "-O",
+        os.path.join(str(dict), "dna-sequences.dict"),
+    ]
+    subprocess.run(cmd, check=True)
     shutil.copyfile(str(reference_fasta), 
                     os.path.join(str(output_fai), 
                                  os.path.basename(str(reference_fasta))))
-    return output_fai
+    shutil.copyfile(os.path.join(str(dict), "dna-sequences.dict"), 
+                    os.path.join(str(output_fai), 
+                                 os.path.basename(str(reference_fasta))))
+    return output_fai, dict

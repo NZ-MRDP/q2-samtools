@@ -7,11 +7,11 @@ from q2_types.sample_data import SampleData
 from q2_types_genomics.per_sample_data._type import AlignmentMap
 from qiime2.plugin import Bool, Int, Range, Str
 
-from ._format import (SamtoolsIndexDirFormat,
+from ._format import (DictDirFormat, DictFileFormat, SamtoolsIndexDirFormat,
                       SamtoolsIndexSequencesDirectoryFormat,
                       SamtoolsRegionDirFormat)
-from ._type import (SamtoolsIndexFormat, SamtoolsIndexSequencesFormat,
-                    SamtoolsRegionFormat)
+from ._type import (DictType, SamtoolsIndexFormat,
+                    SamtoolsIndexSequencesFormat, SamtoolsRegionFormat)
 
 plugin = qiime2.plugin.Plugin(
     name="samtools",
@@ -23,8 +23,7 @@ plugin = qiime2.plugin.Plugin(
     citation_text=("https://pubmed.ncbi.nlm.nih.gov/33590861/"),
 )
 
-plugin.methods.register_function(
-    function=q2_samtools.sort,
+plugin.methods.register_function(function=q2_samtools.sort,
     inputs={"alignment_map": SampleData[AlignmentMap], "reference_fasta": FeatureData[Sequence]},
     parameters={
         "threads": Int,
@@ -99,8 +98,7 @@ plugin.methods.register_function(
     ),
 )
 
-plugin.methods.register_function(
-    function=q2_samtools.extract_fasta_subsequence,
+plugin.methods.register_function(function=q2_samtools.extract_fasta_subsequence,
     inputs={
         "reference_fasta": FeatureData[Sequence],
         "region_file": FeatureData[SamtoolsRegionFormat],
@@ -144,19 +142,22 @@ plugin.methods.register_function(
 plugin.methods.register_function(
     function=q2_samtools.index_fasta,
     inputs={
-        "reference_fasta": FeatureData[Sequence],
+        "reference_fasta": FeatureData[Sequence]
     },
     parameters={},
-    outputs=[("output_fai", FeatureData[SamtoolsIndexSequencesFormat])],
+    outputs=[("output_fai", FeatureData[SamtoolsIndexSequencesFormat]),
+        ("dict", FeatureData[SamtoolsIndexSequencesFormat])],
     input_descriptions={
         "reference_fasta": ("Reference DNA sequence FASTA."),
     },
     parameter_descriptions={},
-    output_descriptions={"output_fai": "QZA that includes both reference fasta and reference fasta index as ref.fasta.fai"},
-    name="index a FASTA",
+    output_descriptions={"output_fai": "QZA that includes both reference fasta and reference fasta index as ref.fasta.fai",
+                         "dict": "The output SAM file contains a header but no SAMRecords, and the header contains only sequence records."},
+    name="index a FASTA and create a dictionary",
     description=(
         "Index reference sequence in the FASTA format.fasta_index will index the file and create <ref.fasta>.fai. "
-        "The sequences in the input file should all have different names."
+        "The sequences in the input file should all have different names. Creates a sequence dictionary for a reference sequence. This tool creates a sequence dictionary file (with .dict extension)"
+        " from a reference sequence provided in FASTA format, which is required by many processing and analysis tools."
     ),
 )
 
@@ -167,3 +168,5 @@ plugin.register_semantic_type_to_format(FeatureData[SamtoolsRegionFormat], artif
 
 plugin.register_formats(SamtoolsIndexSequencesDirectoryFormat)
 plugin.register_semantic_type_to_format(FeatureData[SamtoolsIndexSequencesFormat], artifact_format=SamtoolsIndexSequencesDirectoryFormat)
+plugin.register_formats(DictDirFormat)
+plugin.register_semantic_type_to_format(FeatureData[DictType], artifact_format=DictDirFormat)

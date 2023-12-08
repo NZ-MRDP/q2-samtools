@@ -7,6 +7,16 @@ from q2_types.feature_data._format import DNAFASTAFormat
 from qiime2.plugin import ValidationError, model
 
 
+class DictFileFormat(model.TextFileFormat):
+    """DictFileFormat."""
+
+    # TODO: Add validation
+    def _validate_(self, *args):
+        pass
+
+
+DictDirFormat = model.SingleFileDirectoryFormat("DictDirFormat", "dna-sequences.dict", DictFileFormat)
+
 class SamtoolsIndexFileFormat(model.TextFileFormat):
     """SamtoolsIndexFileFormat."""
 
@@ -34,9 +44,10 @@ SamtoolsRegionDirFormat = model.SingleFileDirectoryFormat(
 
 class SamtoolsIndexSequencesDirectoryFormat(model.DirectoryFormat):
     reference_fasta = model.File(r".+\.fasta",
-                                    format=DNAFASTAFormat)
+                                    format=DNAFASTAFormat),
     reference_fasta_index = model.File(r".+\.fasta.fai",
-                                     format=SamtoolsIndexFileFormat)
+                                     format=SamtoolsIndexFileFormat),
+    reference_fasta_dict = model.File(r".+\.dict", format=DictFileFormat)
 
     
     def _validate(self, *args):
