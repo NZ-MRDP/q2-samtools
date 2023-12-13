@@ -72,3 +72,7 @@ class SamtoolsIndexSequencesDirectoryFormat(model.DirectoryFormat):
     @property
     def reference_fasta_index_filepath(self):
         return [e for e in os.listdir(self.path) if e.endswith("fai")]
+    
+    @property
+    def reference_fasta_dict_filepath(self):
+        return [e for e in os.listdir(self.path) if e.endswith("dict")]

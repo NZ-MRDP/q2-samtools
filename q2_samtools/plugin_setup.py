@@ -1,26 +1,17 @@
 """QIIME 2 plugin for samtools."""
 
+import q2_samtools
 import qiime2.plugin
 from q2_types.feature_data import FeatureData, Sequence
 from q2_types.sample_data import SampleData
 from q2_types_genomics.per_sample_data._type import AlignmentMap
 from qiime2.plugin import Bool, Int, Range, Str
 
-import q2_samtools
-
-from ._format import (
-    DictDirFormat,
-    DictFileFormat,
-    SamtoolsIndexDirFormat,
-    SamtoolsIndexSequencesDirectoryFormat,
-    SamtoolsRegionDirFormat,
-)
-from ._type import (
-    DictType,
-    SamtoolsIndexFormat,
-    SamtoolsIndexSequencesFormat,
-    SamtoolsRegionFormat,
-)
+from ._format import (DictDirFormat, DictFileFormat, SamtoolsIndexDirFormat,
+                      SamtoolsIndexSequencesDirectoryFormat,
+                      SamtoolsRegionDirFormat)
+from ._type import (DictType, SamtoolsIndexFormat,
+                    SamtoolsIndexSequencesFormat, SamtoolsRegionFormat)
 
 plugin = qiime2.plugin.Plugin(
     name="samtools",
@@ -108,8 +99,7 @@ plugin.methods.register_function(
     ),
 )
 
-plugin.methods.register_function(
-    function=q2_samtools.extract_fasta_subsequence,
+plugin.methods.register_function(function=q2_samtools.extract_fasta_subsequence,
     inputs={
         "reference_fasta": FeatureData[Sequence],
         "region_file": FeatureData[SamtoolsRegionFormat],
