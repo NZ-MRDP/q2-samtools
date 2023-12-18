@@ -8,8 +8,19 @@ from qiime2.plugin import Bool, Int, Range, Str
 
 import q2_samtools
 
-from ._format import SamtoolsIndexDirFormat, SamtoolsRegionDirFormat
-from ._type import SamtoolsIndexFormat, SamtoolsRegionFormat
+from ._format import (
+    DictDirFormat,
+    DictFileFormat,
+    SamtoolsIndexDirFormat,
+    SamtoolsIndexSequencesDirectoryFormat,
+    SamtoolsRegionDirFormat,
+)
+from ._type import (
+    DictType,
+    SamtoolsIndexFormat,
+    SamtoolsIndexSequencesFormat,
+    SamtoolsRegionFormat,
+)
 
 plugin = qiime2.plugin.Plugin(
     name="samtools",
@@ -110,7 +121,7 @@ plugin.methods.register_function(
         "fasta_length": Int,
         "mark_strand": Str,
     },
-    outputs=[("fasta_subsequence", FeatureData[Sequence])],
+    outputs=[("fasta_subsequence", FeatureData[SamtoolsIndexSequencesFormat])],
     input_descriptions={
         "reference_fasta": ("Reference DNA sequence FASTA."),
         "region_file": ("File of regions.  Format is chr:from-to, one per line. Output will be a FASTA."),
@@ -141,20 +152,21 @@ plugin.methods.register_function(
 
 plugin.methods.register_function(
     function=q2_samtools.index_fasta,
-    inputs={
-        "reference_fasta": FeatureData[Sequence],
-    },
+    inputs={"reference_fasta": FeatureData[Sequence]},
     parameters={},
-    outputs=[("output_fai", FeatureData[SamtoolsIndexFormat])],
-    input_descriptions={
-        "reference_fasta": ("Reference DNA sequence FASTA."),
+    outputs=[("output_fai", FeatureData[SamtoolsIndexSequencesFormat]), ("dict", FeatureData[DictType])],
+    output_descriptions={
+        "output_fai": "QZA that includes both reference fasta and reference fasta index as ref.fasta.fai",
+        "dict": "The output SAM file contains a header but no SAMRecords, and the header contains only sequence "
+        "records.",
     },
-    parameter_descriptions={},
-    output_descriptions={"output_fai": "Write index to file rather than to stdout"},
-    name="index a FASTA",
+    name="index a FASTA and create a dictionary",
     description=(
         "Index reference sequence in the FASTA format.fasta_index will index the file and create <ref.fasta>.fai. "
-        "The sequences in the input file should all have different names."
+        "The sequences in the input file should all have different names. Creates a sequence dictionary for "
+        "a reference sequence. "
+        "This tool creates a sequence dictionary file (with .dict extension) "
+        "from a reference sequence provided in FASTA format, which is required by many processing and analysis tools."
     ),
 )
 
@@ -162,3 +174,10 @@ plugin.register_formats(SamtoolsIndexDirFormat)
 plugin.register_semantic_type_to_format(FeatureData[SamtoolsIndexFormat], artifact_format=SamtoolsIndexDirFormat)
 plugin.register_formats(SamtoolsRegionDirFormat)
 plugin.register_semantic_type_to_format(FeatureData[SamtoolsRegionFormat], artifact_format=SamtoolsRegionDirFormat)
+
+plugin.register_formats(SamtoolsIndexSequencesDirectoryFormat)
+plugin.register_semantic_type_to_format(
+    FeatureData[SamtoolsIndexSequencesFormat], artifact_format=SamtoolsIndexSequencesDirectoryFormat
+)
+plugin.register_formats(DictDirFormat)
+plugin.register_semantic_type_to_format(FeatureData[DictType], artifact_format=DictDirFormat)
