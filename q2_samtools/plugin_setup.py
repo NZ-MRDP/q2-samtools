@@ -1,17 +1,26 @@
 """QIIME 2 plugin for samtools."""
 
-import q2_samtools
 import qiime2.plugin
 from q2_types.feature_data import FeatureData, Sequence
 from q2_types.sample_data import SampleData
 from q2_types_genomics.per_sample_data._type import AlignmentMap
 from qiime2.plugin import Bool, Int, Range, Str
 
-from ._format import (DictDirFormat, DictFileFormat, SamtoolsIndexDirFormat,
-                      SamtoolsIndexSequencesDirectoryFormat,
-                      SamtoolsRegionDirFormat)
-from ._type import (DictType, SamtoolsIndexFormat,
-                    SamtoolsIndexSequencesFormat, SamtoolsRegionFormat)
+import q2_samtools
+
+from ._format import (
+    DictDirFormat,
+    DictFileFormat,
+    SamtoolsIndexDirFormat,
+    SamtoolsIndexSequencesDirectoryFormat,
+    SamtoolsRegionDirFormat,
+)
+from ._type import (
+    DictType,
+    SamtoolsIndexFormat,
+    SamtoolsIndexSequencesFormat,
+    SamtoolsRegionFormat,
+)
 
 plugin = qiime2.plugin.Plugin(
     name="samtools",
@@ -99,7 +108,8 @@ plugin.methods.register_function(
     ),
 )
 
-plugin.methods.register_function(function=q2_samtools.extract_fasta_subsequence,
+plugin.methods.register_function(
+    function=q2_samtools.extract_fasta_subsequence,
     inputs={
         "reference_fasta": FeatureData[Sequence],
         "region_file": FeatureData[SamtoolsRegionFormat],
@@ -145,19 +155,18 @@ plugin.methods.register_function(
     inputs={"reference_fasta": FeatureData[Sequence]},
     parameters={},
     outputs=[("output_fai", FeatureData[SamtoolsIndexSequencesFormat]), ("dict", FeatureData[DictType])],
-    input_descriptions={
-        "reference_fasta": ("Reference DNA sequence FASTA."),
-    },
-    parameter_descriptions={},
     output_descriptions={
         "output_fai": "QZA that includes both reference fasta and reference fasta index as ref.fasta.fai",
-        "dict": "The output SAM file contains a header but no SAMRecords, and the header contains only sequence records.",
+        "dict": "The output SAM file contains a header but no SAMRecords, and the header contains only sequence "
+        "records.",
     },
     name="index a FASTA and create a dictionary",
     description=(
         "Index reference sequence in the FASTA format.fasta_index will index the file and create <ref.fasta>.fai. "
-        "The sequences in the input file should all have different names. Creates a sequence dictionary for a reference sequence. This tool creates a sequence dictionary file (with .dict extension)"
-        " from a reference sequence provided in FASTA format, which is required by many processing and analysis tools."
+        "The sequences in the input file should all have different names. Creates a sequence dictionary for "
+        "a reference sequence. "
+        "This tool creates a sequence dictionary file (with .dict extension) "
+        "from a reference sequence provided in FASTA format, which is required by many processing and analysis tools."
     ),
 )
 

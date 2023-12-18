@@ -6,9 +6,13 @@ from typing import Union
 from q2_types.feature_data._format import DNAFASTAFormat, RNAFASTAFormat
 from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
 
-from ._format import (DictDirFormat, DictFileFormat, SamtoolsIndexFileFormat,
-                      SamtoolsIndexSequencesDirectoryFormat,
-                      SamtoolsRegionFileFormat)
+from ._format import (
+    DictDirFormat,
+    DictFileFormat,
+    SamtoolsIndexFileFormat,
+    SamtoolsIndexSequencesDirectoryFormat,
+    SamtoolsRegionFileFormat,
+)
 
 # TODO: Make sure .sam/.cram files work - low priority
 # TODO: maybe add another method that allows transformations from .sam/.cram to .bam

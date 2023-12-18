@@ -4,4 +4,11 @@ from ._type import DictType, SamtoolsIndexFormat, SamtoolsRegionFormat
 
 __version__ = "0.0.0"
 
-__all__ = ["sort", "index_fasta", "extract_fasta_subsequence", "SamtoolsIndexFormat", "SamtoolsRegionFormat", "DictType"]
+__all__ = [
+    "sort",
+    "index_fasta",
+    "extract_fasta_subsequence",
+    "SamtoolsIndexFormat",
+    "SamtoolsRegionFormat",
+    "DictType",
+]

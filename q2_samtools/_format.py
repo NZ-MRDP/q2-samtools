@@ -1,6 +1,4 @@
-import importlib
 import os
-import subprocess
 from pathlib import Path
 
 from q2_types.feature_data._format import DNAFASTAFormat
@@ -53,7 +51,7 @@ class SamtoolsIndexSequencesDirectoryFormat(model.DirectoryFormat):
         for fasta, fai in zip(self.reference_fasta_filepath, self.reference_fasta_index_filepath):
             if Path(fasta).stem != Path(fai).stem:
                 raise ValidationError(
-                    """Found mismatches in file names. 
+                    """Found mismatches in file names.
                                       Bam and bai files must have matching file names before extension"""
                 )
 
@@ -72,7 +70,7 @@ class SamtoolsIndexSequencesDirectoryFormat(model.DirectoryFormat):
     @property
     def reference_fasta_index_filepath(self):
         return [e for e in os.listdir(self.path) if e.endswith("fai")]
-    
+
     @property
     def reference_fasta_dict_filepath(self):
         return [e for e in os.listdir(self.path) if e.endswith("dict")]
