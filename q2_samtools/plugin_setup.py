@@ -117,7 +117,7 @@ plugin.methods.register_function(
         "fasta_length": Int,
         "mark_strand": Str,
     },
-    outputs=[("fasta_subsequence", FeatureData[Sequence])],
+    outputs=("fasta_subsequence", FeatureData[SequenceIndex]),
     input_descriptions={
         "reference_sequences": ("Reference DNA sequence FASTA."),
         "region_file": ("File of regions.  Format is chr:from-to, one per line. Output will be a FASTA."),
@@ -156,11 +156,17 @@ plugin.methods.register_function(
     input_descriptions={
         "reference_sequences": ("Reference DNA sequence FASTA."),
     },
-    parameter_descriptions={},
-    output_descriptions={"output_fai": "Write index to file rather than to stdout"},
-    name="index a FASTA",
+    output_descriptions={
+        "output_fai": "QZA that includes both reference fasta and reference fasta index as ref.fasta.fai",
+        "dict": "The output SAM file contains a header but no SAMRecords, and the header contains only sequence "
+        "records.",
+    },
+    name="index a FASTA and create a dictionary",
     description=(
         "Index reference sequence in the FASTA format.fasta_index will index the file and create <ref.fasta>.fai. "
-        "The sequences in the input file should all have different names."
+        "The sequences in the input file should all have different names. Creates a sequence dictionary for "
+        "a reference sequence. "
+        "This tool creates a sequence dictionary file (with .dict extension) "
+        "from a reference sequence provided in FASTA format, which is required by many processing and analysis tools."
     ),
 )
