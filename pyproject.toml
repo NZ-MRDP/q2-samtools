@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "q2-samtools"
 description = ""
-version = "0.0.0"
+version = "0"
 authors = ["Megan Chenaux <mled@novozymes.com>"]
 packages = [{include = "q2_samtools"}]
 
@@ -41,3 +41,6 @@ line-length = 119
 
 [tool.isort]
 profile = "black"
+
+[tool.poetry-version-plugin]
+source = "init"

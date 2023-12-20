@@ -9,9 +9,11 @@ from qiime2.plugin import Bool, Int, Range, Str
 
 import q2_samtools
 
+from . import __version__
+
 plugin = qiime2.plugin.Plugin(
     name="samtools",
-    version="0.0.0",
+    version=__version__,
     description="QIIME 2 plugin for samtools",
     website="http://www.htslib.org/",
     package="q2_samtools",
@@ -117,7 +119,7 @@ plugin.methods.register_function(
         "fasta_length": Int,
         "mark_strand": Str,
     },
-    outputs=("fasta_subsequence", FeatureData[SequenceIndex]),
+    outputs=[("fasta_subsequence", FeatureData[SequenceIndex])],
     input_descriptions={
         "reference_sequences": ("Reference DNA sequence FASTA."),
         "region_file": ("File of regions.  Format is chr:from-to, one per line. Output will be a FASTA."),
@@ -158,8 +160,6 @@ plugin.methods.register_function(
     },
     output_descriptions={
         "output_fai": "QZA that includes both reference fasta and reference fasta index as ref.fasta.fai",
-        "dict": "The output SAM file contains a header but no SAMRecords, and the header contains only sequence "
-        "records.",
     },
     name="index a FASTA and create a dictionary",
     description=(
