@@ -22,6 +22,7 @@ pytest = "^7.2.1"
 pyright = "^1.1.293"
 pytest-cov = "^4.0.0"
 pytest-isort = "^3.1.0"
+q2-types-variant="^0.1.0"
 
 [tool.pyright]
 exclude = ["*nox"]
