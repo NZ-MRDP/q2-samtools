@@ -116,14 +116,5 @@ def index_sequences(
     shutil.copyfile(
         str(reference_sequences), os.path.join(str(output_fai), os.path.basename(str(reference_sequences)))
     )
-    cmd_gatk = [
-        "gatk",
-        "CreateSequenceDictionary",
-        "-R",
-        str(reference_sequences),
-        "-O",
-        os.path.join(str(output_fai), "dna-sequences.dict"),
-    ]
-    subprocess.run(cmd_gatk, check=True)
 
     return output_fai
