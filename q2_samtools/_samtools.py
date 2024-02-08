@@ -105,6 +105,7 @@ def index_sequences(
 ) -> SamtoolsIndexSequencesDirectoryFormat:
     """index_fasta."""
     output_fai = SamtoolsIndexSequencesDirectoryFormat()
+
     cmd_samtools = [
         "samtools",
         "faidx",
@@ -116,6 +117,7 @@ def index_sequences(
     shutil.copyfile(
         str(reference_sequences), os.path.join(str(output_fai), os.path.basename(str(reference_sequences)))
     )
+
     cmd_gatk = [
         "gatk",
         "CreateSequenceDictionary",
