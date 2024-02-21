@@ -1,5 +1,4 @@
 import os
-import shutil
 import subprocess
 from typing import Union
 
@@ -10,6 +9,7 @@ from q2_types_variant import (
     SamtoolsIndexSequencesDirectoryFormat,
     SamtoolsRegionFileFormat,
 )
+from qiime2.util import duplicate
 
 # TODO: Make sure .sam/.cram files work - low priority
 # TODO: maybe add another method that allows transformations from .sam/.cram to .bam
@@ -114,15 +114,14 @@ def index_sequences(
         os.path.join(str(output_fai), "dna-sequences.fasta.fai"),
     ]
     subprocess.run(cmd_samtools, check=True)
-    shutil.copyfile(
-        str(reference_sequences), os.path.join(str(output_fai), os.path.basename(str(reference_sequences)))
-    )
+
+    duplicate(str(reference_sequences), os.path.join(str(output_fai), "dna-sequences.fasta"))
 
     cmd_gatk = [
         "gatk",
         "CreateSequenceDictionary",
         "-R",
-        str(reference_sequences),
+        output_fai.reference_fasta_filepath,
         "-O",
         os.path.join(str(output_fai), "dna-sequences.dict"),
     ]
