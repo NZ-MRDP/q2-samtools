@@ -2,8 +2,8 @@
 
 import qiime2.plugin
 from q2_types.feature_data import FeatureData, Sequence
+from q2_types.per_sample_sequences import AlignmentMap
 from q2_types.sample_data import SampleData
-from q2_types_genomics.per_sample_data._type import AlignmentMap
 from q2_types_variant import GenBankSequence, SamtoolsRegion, SequenceIndex
 from qiime2.plugin import Bool, Int, Range, Str
 
@@ -29,9 +29,13 @@ plugin.methods.register_function(
         "compression_level": Int % Range(0, 9, inclusive_end=True),
         "memory_per_thread": Str,
         "name_sort": Bool,
+        "lexicographical_name_sort": Bool,
         "tag_sort": Str,
         "minimizer_sort": Bool,
         "kmer_size": Int,
+        "minimizer_window": Int,
+        "minimizer_reference_index": Str,
+        "homopolymer_squash": Bool,
         "prefix": Str,
         "exclude_pg": Bool,
         "template_coordinate": Bool,
@@ -39,11 +43,8 @@ plugin.methods.register_function(
     },
     outputs=[("output_bam", SampleData[AlignmentMap])],
     input_descriptions={
-        "alignment_map": (
-            "Input should be a bam file imported as a qza. A separate q2 plugin is planned to convert "
-            "between bam, sam, and cram formats."
-        ),
-        "reference_sequences": ("Reference DNA sequence FASTA"),
+        "alignment_map": "BAM alignment files to sort with samtools.",
+        "reference_sequences": "Reference sequences used when building a minimiser index for unmapped-read sorting.",
     },
     parameter_descriptions={
         "threads": "-@ Set number of sorting and compression threads. By default, operation is single-threaded.",
@@ -58,6 +59,9 @@ plugin.methods.register_function(
             "files, it enforces a minimum value of 1M for this setting."
         ),
         "name_sort": ("Sort by read names (i.e., the QNAME field) rather than by chromosomal coordinates."),
+        "lexicographical_name_sort": (
+            "Use lexicographical ordering of read names (`-N`) instead of the natural name sort (`-n`)."
+        ),
         "tag_sort": (
             "Sort first by the value in the alignment tag TAG, then by position or name " "(if also using name_sort)"
         ),
@@ -70,6 +74,11 @@ plugin.methods.register_function(
             "sorted by chromosome and position."
         ),
         "kmer_size": "Sets the kmer size to be used in the mimizer_sort option. Default = 20",
+        "minimizer_window": "Window size used when computing minimisers for `minimizer_sort`.",
+        "minimizer_reference_index": (
+            "Path to a reference minimiser index to use with `minimizer_sort` (`-I`)."
+        ),
+        "homopolymer_squash": "Squash homopolymer runs before computing minimisers for `minimizer_sort` (`-H`).",
         "prefix": (
             "Write temporary files to PREFIX.nnnn.bam, or if the specified PREFIX is an existing directory, "
             "to PREFIX/samtools.mmm.mmm.tmp.nnnn.bam, where mmm is unique to this invocation of the sort command. "
@@ -85,23 +94,24 @@ plugin.methods.register_function(
         "verbosity": "Set level of verbosity",
     },
     output_descriptions={
-        "output_bam": (
-            "Output is a bam file compressed in a qza. A separate q2 plugin is planned to convert between "
-            "bam, sam, and cram formats."
-        )
+        "output_bam": "Sorted BAM alignment files."
     },
     name="sort bam files",
     description=(
         "Sort alignments by leftmost coordinates, by read name when name_sort is used, by tag contents with -t, "
-        "or a minimiser-based collation order with minimizer_sort. An appropriate @HD-SO sort order header tag will be added "
+        "or a minimiser-based collation order with minimizer_sort. "
+        "An appropriate @HD-SO sort order header tag will be added "
         "or an existing one updated if necessary. The sorted output is written to standard output by default, "
-        "or to the specified file (out.bam) when --o-output-bam or --output-dir are used. This command will also create temporary files"
-        " 'tmpprefix.%d.bam' as needed when the entire alignment data cannot fit into memory (as controlled via the memory_per_thread"
-        " option). Consider using samtools collate instead if you need name collated data without a full lexicographical sort. "
-        "Note that if the sorted output file is to be indexed with samtools index, the default coordinate sort must be used. "
-        "Thus the name_sort, tag_sort and minimizer_sort options are incompatible with samtools index. When sorting by minimisier "
-        "(minimizer_sort), the sort order is defined by the whole-read minimiser value and the offset into the read that this minimiser "
-        "was observed. This produces small clusters (contig-like, but unaligned) and helps to improve compression with LZ algorithms. "
+        "or to the specified file (out.bam) when --o-output-bam or --output-dir are used. "
+        "This command will also create temporary files 'tmpprefix.%d.bam' as needed when the entire alignment "
+        "data cannot fit into memory (as controlled via the memory_per_thread option). "
+        "Consider using samtools collate instead if you need name collated data without a full lexicographical sort. "
+        "Note that if the sorted output file is to be indexed with samtools index, "
+        "the default coordinate sort must be used. "
+        "Thus the name_sort, tag_sort and minimizer_sort options are incompatible with samtools index. "
+        "When sorting by minimisier (minimizer_sort), the sort order is defined by the whole-read minimiser "
+        "value and the offset into the read that this minimiser was observed. "
+        "This produces small clusters (contig-like, but unaligned) and helps improve compression with LZ algorithms. "
         "This can be improved by supplying a known reference to build a minimiser index (reference_sequences option)."
     ),
 )
@@ -119,11 +129,11 @@ plugin.methods.register_function(
         "fasta_length": Int,
         "mark_strand": Str,
     },
-    outputs=[("fasta_subsequence", FeatureData[SequenceIndex])],
+    outputs=[("fasta_subsequence", FeatureData[Sequence])],
     input_descriptions={
-        "reference_sequences": ("Reference DNA sequence FASTA."),
-        "region_file": ("File of regions.  Format is chr:from-to, one per line. Output will be a FASTA."),
-        "input_fai": ("If using region_file, indexes of sequences to extract from reference FASTA."),
+        "reference_sequences": "Reference FASTA sequences from which subsequences will be extracted.",
+        "region_file": "Reference-sequence regions to extract, one interval per line.",
+        "input_fai": "Indexed reference sequences artifact created by `samtools index-sequences`.",
     },
     parameter_descriptions={
         "ignore_missing_region": (
@@ -131,19 +141,22 @@ plugin.methods.register_function(
         ),
         "fasta_length": ("Length for output FASTA sequence line wrapping. 0 = do not line wrap."),
         "reverse_complement": (
-            "Output the sequence as the reverse complement. When this option is used, “/rc” will be appended to the sequence names. "
+            "Output the sequence as the reverse complement. "
+            "When this option is used, “/rc” will be appended to the sequence names. "
             "To turn this off or change the string appended, use the --mark-strand option."
         ),
         "mark_strand": (
-            "Add strand indicator to sequence name options: rc = /rc on negative strand (default), no = no strand indicator, "
+            "Add strand indicator to sequence name options: rc = /rc on negative strand (default), "
+            "no = no strand indicator, "
             "sign = (+) / (-), or custom <pos>,<neg> for custom indicator."
         ),
     },
-    output_descriptions={"fasta_subsequence": "Subset FASTA with formatting according to chosen parameters."},
+    output_descriptions={"fasta_subsequence": "FASTA subsequences extracted from the requested regions."},
     name="extract subsequence from FASTA using index and region files",
     description=(
-        "Extract subsequence from indexed reference sequence. Subsequences will be retrieved from region_file."
-        " The sequences in the reference_sequences should all have different names. If they do not, retrieval will only produce subsequences"
+        "Extract subsequence from indexed reference sequence. Subsequences will be retrieved from region_file. "
+        "The sequences in the reference_sequences should all have different names. "
+        "If they do not, retrieval will only produce subsequences "
         " from the first sequence with the duplicated name."
     ),
 )
@@ -156,10 +169,10 @@ plugin.methods.register_function(
     parameters={},
     outputs=[("output_fai", FeatureData[SequenceIndex])],
     input_descriptions={
-        "reference_sequences": ("Reference DNA sequence FASTA."),
+        "reference_sequences": "Reference sequences to index for downstream samtools and GATK workflows.",
     },
     output_descriptions={
-        "output_fai": "QZA that includes both reference fasta and reference fasta index as ref.fasta.fai",
+        "output_fai": "Indexed reference sequences artifact containing the FASTA, `.fai`, and `.dict` files.",
     },
     name="index a FASTA and create a dictionary",
     description=(

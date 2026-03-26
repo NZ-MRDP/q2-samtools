@@ -1,11 +1,12 @@
+"""samtools actions used by the QIIME 2 plugin."""
+
 import os
 import subprocess
-from typing import Union
+from typing import Optional, Union
 
-from q2_types.feature_data._format import DNAFASTAFormat, RNAFASTAFormat
-from q2_types_genomics.per_sample_data._format import BAMDirFmt, BAMFormat
+from q2_types.feature_data import DNAFASTAFormat, RNAFASTAFormat
+from q2_types.per_sample_sequences import BAMDirFmt, BAMFormat
 from q2_types_variant import (
-    SamtoolsIndexFileFormat,
     SamtoolsIndexSequencesDirectoryFormat,
     SamtoolsRegionFileFormat,
 )
@@ -17,20 +18,24 @@ from qiime2.util import duplicate
 
 def sort(
     alignment_map: BAMDirFmt,
-    reference_sequences: Union[DNAFASTAFormat, RNAFASTAFormat] = None,
+    reference_sequences: Optional[Union[DNAFASTAFormat, RNAFASTAFormat]] = None,
     threads: int = 1,
     compression_level: int = 1,
     memory_per_thread: str = "768M",
     name_sort: bool = False,
-    tag_sort: str = None,
+    lexicographical_name_sort: bool = False,
+    tag_sort: Optional[str] = None,
     minimizer_sort: bool = False,
     kmer_size: int = 20,
-    prefix: str = None,
+    minimizer_window: Optional[int] = None,
+    minimizer_reference_index: Optional[str] = None,
+    homopolymer_squash: bool = False,
+    prefix: Optional[str] = None,
     template_coordinate: bool = False,
     exclude_pg: bool = False,
     verbosity: int = 1,
 ) -> BAMDirFmt:
-    """sort."""
+    """Sort BAM files with samtools."""
     output_bam = BAMDirFmt()
     for path, _ in alignment_map.bams.iter_views(view_type=BAMFormat):  # type: ignore
         cmd = [
@@ -50,6 +55,8 @@ def sort(
         ]
         if name_sort:
             cmd.append("-n")
+        if lexicographical_name_sort:
+            cmd.append("-N")
         if exclude_pg:
             cmd.append("--no-PG")
         if template_coordinate:
@@ -60,6 +67,12 @@ def sort(
             cmd.extend(["-t", str(tag_sort)])
         if minimizer_sort:
             cmd.extend(["-M", "-K", str(kmer_size)])
+        if minimizer_window is not None:
+            cmd.extend(["-w", str(minimizer_window)])
+        if minimizer_reference_index:
+            cmd.extend(["-I", minimizer_reference_index])
+        if homopolymer_squash:
+            cmd.append("-H")
         if reference_sequences:
             cmd.extend(["--reference", str(reference_sequences)])
         subprocess.run(cmd, check=True)
@@ -69,13 +82,13 @@ def sort(
 def extract_fasta_subsequence(
     reference_sequences: DNAFASTAFormat,
     region_file: SamtoolsRegionFileFormat,
-    input_fai: SamtoolsIndexFileFormat,
+    input_fai: SamtoolsIndexSequencesDirectoryFormat,
     ignore_missing_region: bool = False,
     fasta_length: int = 60,
     reverse_complement: bool = False,
     mark_strand: str = "rc",
 ) -> DNAFASTAFormat:
-    """extract_fasta_subsequence."""
+    """Extract subsequences from an indexed FASTA file."""
     fasta_subsequence = DNAFASTAFormat()
     cmd = [
         "samtools",
@@ -84,7 +97,7 @@ def extract_fasta_subsequence(
         "--region-file",
         str(region_file),
         "--fai-idx",
-        str(input_fai),
+        input_fai.reference_fasta_index_filepath,
         "-n",
         str(fasta_length),
         "-o",
@@ -103,7 +116,7 @@ def extract_fasta_subsequence(
 def index_sequences(
     reference_sequences: DNAFASTAFormat,
 ) -> SamtoolsIndexSequencesDirectoryFormat:
-    """index_fasta."""
+    """Create samtools and GATK index files for a reference FASTA."""
     output_fai = SamtoolsIndexSequencesDirectoryFormat()
 
     cmd_samtools = [
